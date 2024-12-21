@@ -1,0 +1,81 @@
+import sqlite3
+import random
+from datetime import datetime, timedelta
+
+# Connect to SQLite database (or create it if it doesn't exist)
+conn = sqlite3.connect("person.db")
+cursor = conn.cursor()
+
+# Create the Person table
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS Person (
+    person_id INTEGER PRIMARY KEY,
+    gender_concept_id INTEGER,
+    year_of_birth INTEGER,
+    month_of_birth INTEGER,
+    day_of_birth INTEGER,
+    birth_datetime TEXT,
+    race_concept_id INTEGER,
+    ethnicity_concept_id INTEGER,
+    location_id INTEGER,
+    provider_id INTEGER,
+    care_site_id INTEGER,
+    person_source_value TEXT,
+    gender_source_value TEXT,
+    gender_source_concept_id INTEGER,
+    race_source_value TEXT,
+    race_source_concept_id INTEGER,
+    ethnicity_source_value TEXT,
+    ethnicity_source_concept_id INTEGER
+);
+''')
+
+# Function to generate a random datetime
+def random_date(start_year, end_year):
+    start_date = datetime(start_year, 1, 1)
+    end_date = datetime(end_year, 12, 31)
+    delta = end_date - start_date
+    random_days = random.randint(0, delta.days)
+    random_date = start_date + timedelta(days=random_days)
+    return random_date
+
+# Insert 100 rows of realistic data
+for person_id in range(1, 101):
+    gender_concept_id = random.randint(1, 3)
+    year_of_birth = random.randint(1960, 2000)
+    month_of_birth = random.randint(1, 12)
+    day_of_birth = random.randint(1, 28)  # Simplified to avoid invalid dates
+    birth_datetime = random_date(1960, 2000).strftime("%Y-%m-%d %H:%M:%S")
+    race_concept_id = random.randint(4, 6)
+    ethnicity_concept_id = random.randint(7, 8)
+    location_id = random.randint(1, 10)
+    provider_id = random.randint(1, 10)
+    care_site_id = random.randint(1, 10)
+    person_source_value = f"SRC{person_id}"
+    gender_source_value = "Male" if gender_concept_id == 1 else "Female"
+    gender_source_concept_id = 0
+    race_source_value = random.choice(["White", "Black or African American", "Asian"])
+    race_source_concept_id = 0
+    ethnicity_source_value = "Hispanic" if ethnicity_concept_id == 7 else "Not Hispanic"
+    ethnicity_source_concept_id = 0
+
+    # Insert row into the Person table
+    cursor.execute('''
+    INSERT INTO Person (
+        person_id, gender_concept_id, year_of_birth, month_of_birth, day_of_birth, birth_datetime,
+        race_concept_id, ethnicity_concept_id, location_id, provider_id, care_site_id,
+        person_source_value, gender_source_value, gender_source_concept_id,
+        race_source_value, race_source_concept_id, ethnicity_source_value, ethnicity_source_concept_id
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ''', (
+        person_id, gender_concept_id, year_of_birth, month_of_birth, day_of_birth, birth_datetime,
+        race_concept_id, ethnicity_concept_id, location_id, provider_id, care_site_id,
+        person_source_value, gender_source_value, gender_source_concept_id,
+        race_source_value, race_source_concept_id, ethnicity_source_value, ethnicity_source_concept_id
+    ))
+
+# Commit the changes and close the connection
+conn.commit()
+conn.close()
+
+print("Person table created and populated with 100 rows of data.")
